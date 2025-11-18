@@ -8,11 +8,17 @@ from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.neural_network import MLPClassifier
 
-MODEL_FILENAME = "mlp_mnist_model_numpy_0.1.pkl"
+# Creiamo la cartella "dataset" se non esiste
+DATASET_DIR = "dataset"
+os.makedirs(DATASET_DIR, exist_ok=True)
+
+# Nome di default del modello (temporaneo, poi lo cambieremo dopo il training)
+MODEL_FILENAME = os.path.join(DATASET_DIR, "mlp_mnist_model_numpy_0.2.pkl")
 
 def load_or_train_model():
+    # Se il modello esiste già, lo carichiamo
     if os.path.exists(MODEL_FILENAME):
-        print("Caricamento modello...")
+        print(f"Caricamento modello da {MODEL_FILENAME}...")
         return joblib.load(MODEL_FILENAME)
     
     print("Caricamento dataset MNIST...")
@@ -44,10 +50,18 @@ def load_or_train_model():
     print("Addestramento modello...")
     mlp.fit(X_train, y_train)
 
+    # Calcoliamo accuratezza media con cross-validation
     scores = cross_val_score(mlp, X, y, cv=5)
-    print(f"Accuratezza media: {scores.mean():.4f}")
+    mean_accuracy = scores.mean()
+    print(f"Accuratezza media: {mean_accuracy:.4f}")
 
-    joblib.dump(mlp, MODEL_FILENAME)
+    # Salviamo il modello con l'accuratezza nel nome del file
+    MODEL_FILENAME_WITH_SCORE = os.path.join(
+        DATASET_DIR, f"mlp_mnist_model_acc_{mean_accuracy:.4f}.pkl"
+    )
+    joblib.dump(mlp, MODEL_FILENAME_WITH_SCORE)
+    print(f"Modello salvato in {MODEL_FILENAME_WITH_SCORE}")
+
     return mlp
 
 class DigitRecognizerApp(tk.Tk):

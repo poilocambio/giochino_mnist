@@ -1,0 +1,15 @@
+# Ignora ambiente virtuale
+venv311/
+
+# Ignora file temporanei di Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignora dataset o modelli pesanti se vuoi
+mlp_mnist_model_numpy_*.pkl
+
+# Ignora file di sistema
+.DS_Store
+Thumbs.db

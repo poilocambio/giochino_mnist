@@ -7,9 +7,6 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Ignora dataset o modelli pesanti se vuoi
-mlp_mnist_model_numpy_*.pkl
-
 # Ignora file di sistema
 .DS_Store
 Thumbs.db

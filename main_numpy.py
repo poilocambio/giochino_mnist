@@ -32,35 +32,41 @@ def load_or_train_model():
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
-    
+
     mlp = MLPClassifier(
-        hidden_layer_sizes=(128, 64), 
+        hidden_layer_sizes=(256, 128),
         activation="relu",
-        n_iter_no_change=5,
-        tol=1e-4, 
-        solver="adam", 
-        max_iter=300,
-        verbose=False, 
-        random_state=42,
+        solver="adam",
+        max_iter=500,
         learning_rate="adaptive",
         early_stopping=True,
-        alpha=0.0001
+        alpha=0.0001,
+        random_state=42,
+        tol=1e-5
     )
+mlp = MLPClassifier(
+    hidden_layer_sizes=(256, 128),  # più grande
+    activation="relu",
+    solver="adam",
+    max_iter=500,  # più iterazioni
+    learning_rate="adaptive",
+    early_stopping=True,
+    alpha=0.0001,
+    random_state=42
+)
 
     print("Addestramento modello...")
     mlp.fit(X_train, y_train)
 
-    # Calcoliamo accuratezza media con cross-validation
+    # Accuratezza media
     scores = cross_val_score(mlp, X, y, cv=5)
     mean_accuracy = scores.mean()
     print(f"Accuratezza media: {mean_accuracy:.4f}")
 
-    # Salviamo il modello con l'accuratezza nel nome del file
-    MODEL_FILENAME_WITH_SCORE = os.path.join(
-        DATASET_DIR, f"mlp_mnist_model_acc_{mean_accuracy:.4f}.pkl"
-    )
-    joblib.dump(mlp, MODEL_FILENAME_WITH_SCORE)
-    print(f"Modello salvato in {MODEL_FILENAME_WITH_SCORE}")
+    # Salvataggio modello con accuratezza nel nome
+    model_filename = os.path.join(DATASET_DIR, f"mlp_mnist_acc_{mean_accuracy:.4f}.pkl")
+    joblib.dump(mlp, model_filename)
+    print(f"Modello salvato in {model_filename}")
 
     return mlp
 
@@ -95,7 +101,7 @@ class DigitRecognizerApp(tk.Tk):
     
     def paint(self, event):
         x, y = event.x, event.y
-        r = 12 
+        r = 12
         self.canvas.create_oval(x - r, y - r, x + r, y + r, fill="white", outline="white")
         self.draw.ellipse([x - r, y - r, x + r, y + r], fill="white")
     
@@ -105,10 +111,8 @@ class DigitRecognizerApp(tk.Tk):
         self.draw = ImageDraw.Draw(self.image)
     
     def predict_digit(self):
-        # Convertiamo immagine in array NumPy
         img = np.array(self.image.resize((28, 28)).convert("L")) / 255.0
         img = img.flatten().reshape(1, -1)
-        
         prediction = self.model.predict(img)[0]
         self.label.config(text=f"Predizione: {prediction}")
 
